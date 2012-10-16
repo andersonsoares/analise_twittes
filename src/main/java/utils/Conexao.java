@@ -8,7 +8,7 @@ public class Conexao {
 
 	private static Connection connection;
 	
-	public static void criarConexao() throws SQLException {
+	public static Connection criarConexao() throws SQLException {
 		connection = DriverManager.getConnection
 			(
 				//driver + database
@@ -18,6 +18,8 @@ public class Conexao {
 				//password
 				""
 			);
+		
+		return connection;
 	}
 	
 	public static void fecharConexao() throws SQLException {
