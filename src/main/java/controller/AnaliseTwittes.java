@@ -68,7 +68,7 @@ public class AnaliseTwittes {
 				frequenciaUsuarios.put(user, 0);
 		}
 		
-		
+		Conexao.fecharConexao();
 		
 		return frequenciaUsuarios;
 	}
