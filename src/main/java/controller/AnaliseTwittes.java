@@ -151,13 +151,46 @@ public class AnaliseTwittes {
 	/**
 	 * Metodo que faz uma busca de acordo com a lista de params
 	 * em todas as hashtags passadas por param
+	 * @throws SQLException 
 	 */
-	public int getNrTwittesContaining(List<String> hashtags, List<String> words) {
+	public int getNrTwittesContaining(List<String> words) throws SQLException {
 		
-		// Faz X selects com relacao ao numero de hashtags...
+		Connection connection = Conexao.criarConexao();
+		
+		//montar string para a query sql
+		//ex: word1|word2|word3|...|word4
+		String queryCondition = "";
+		for(int i=0;i<words.size();i++) {
+			if(i+1 < words.size())
+				queryCondition = queryCondition.concat(words.get(i)+"|");
+			else
+				queryCondition = queryCondition.concat(words.get(i));
+		}
+		
+		Statement st;
+		String query;
+		ResultSet rs;
+		
+		int nrTwittes=0;
+		for(Integer keywordId : keywordIds) {
+			st = connection.createStatement();
+//			select count(*) from twittes where ((keyword_id=1) AND (lower(text) similar to '%(elmano ferrer|elmano14|elmano|ptb|14)%'));
+			query = "select count(*) from twittes where ((keyword_id="+keywordId+") AND (lower(text) similar to '%("+queryCondition+")%') )";
+			rs = st.executeQuery(query);
+			
+			if(rs.next()) {
+				nrTwittes += Integer.parseInt(rs.getString("count"));
+			}
+			
+			st.close();
+			rs.close();
+		}
 		
 		
-		return 0;
+		
+		Conexao.fecharConexao();
+		
+		return nrTwittes;
 	}
 	
 	
