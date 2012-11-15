@@ -53,4 +53,15 @@ public class Auxiliar {
 
 	}
 	
+	public static String juntarDadosArray(List<String> array) {
+		StringBuilder sb = new StringBuilder();
+		for(int i=0;i<array.size();i++) {
+			if(i+1 < array.size())
+				sb.append(array.get(i)+"|");
+			else
+				sb.append(array.get(i));
+		}
+		return sb.toString();
+	}
+	
 }

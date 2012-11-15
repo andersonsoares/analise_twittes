@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import utils.Auxiliar;
 import utils.Conexao;
 
 
@@ -159,29 +160,26 @@ public class AnaliseTwittes {
 		
 		//montar string para a query sql
 		//ex: word1|word2|word3|...|word4
-		String queryCondition = "";
-		for(int i=0;i<words.size();i++) {
-			if(i+1 < words.size())
-				queryCondition = queryCondition.concat(words.get(i)+"|");
-			else
-				queryCondition = queryCondition.concat(words.get(i));
-		}
+		
 		
 		Statement st;
 		String query;
 		ResultSet rs;
 		
 		int nrTwittes=0;
+		int i=0;
 		for(Integer keywordId : keywordIds) {
 			st = connection.createStatement();
 //			select count(*) from twittes where ((keyword_id=1) AND (lower(text) similar to '%(elmano ferrer|elmano14|elmano|ptb|14)%'));
-			query = "select count(*) from twittes where ((keyword_id="+keywordId+") AND (lower(text) similar to '%("+queryCondition+")%') )";
+			query = "select count(*) from twittes where ((keyword_id="+keywordId+") AND (lower(text) similar to '%("+Auxiliar.juntarDadosArray(words)+")%') )"+addIntervaloData();
 			rs = st.executeQuery(query);
 			
 			if(rs.next()) {
-				nrTwittes += Integer.parseInt(rs.getString("count"));
+				int partialNrTwittes = Integer.parseInt(rs.getString("count"));
+				System.out.println(hashtags.get(i)+" - "+partialNrTwittes);
+				nrTwittes += partialNrTwittes;
 			}
-			
+			i++;
 			st.close();
 			rs.close();
 		}
