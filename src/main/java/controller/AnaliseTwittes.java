@@ -5,8 +5,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import utils.Conexao;
 
@@ -21,8 +23,8 @@ import utils.Conexao;
  */
 public class AnaliseTwittes {
 	
-	private String hashtag;
-	private int keywordId;
+	private List<String> hashtags;
+	private List<Integer> keywordIds;
 	
 	private String dataInicioString;
 	private String dataFimString;
@@ -30,8 +32,8 @@ public class AnaliseTwittes {
 	//Guarda quantos twittes cada usuario postou
 	private HashMap<String,Integer> frequenciaUsuarios;
 	
-	public AnaliseTwittes(String hashtag,String dataInicioString, String dataFimString) throws Exception {
-		this.hashtag = hashtag;
+	public AnaliseTwittes(List<String> hashtags,String dataInicioString, String dataFimString) throws Exception {
+		this.hashtags = hashtags;
 		
 		// TODO: Verificar estes dois campos
 		
@@ -45,15 +47,28 @@ public class AnaliseTwittes {
 		
 		Connection connection = Conexao.criarConexao();
 		
-		Statement st = connection.createStatement();
-		String query = "select id from keywords where LOWER(name) = '"+hashtag.toLowerCase()+"'";
-		ResultSet rs = st.executeQuery(query);
-		rs.next();
-		String id = rs.getString("id");
-		if(id != null) 
-			keywordId = Integer.parseInt(id);
-		else
-			throw new Exception("Keyword not found");
+		Statement st;
+		String query;
+		ResultSet rs;
+		String id;
+		keywordIds = new ArrayList<Integer>();
+		for(String hashtag : hashtags) {
+			st = connection.createStatement();
+			query = "select id from keywords where LOWER(name) = '"+hashtag.toLowerCase()+"'";
+			rs = st.executeQuery(query);
+			if(rs.next()) {
+				id = rs.getString("id");
+				if(id != null) 
+					keywordIds.add(Integer.parseInt(id));
+				else
+					throw new Exception("Keyword '"+hashtag+"' not found, ocorreu um erro...");
+			} else 
+				throw new Exception("Keyword '"+hashtag+"' not found");
+			
+			st.close();
+			rs.close();
+		}
+		
 		
 		Conexao.fecharConexao();
 		
@@ -69,16 +84,26 @@ public class AnaliseTwittes {
 		frequenciaUsuarios = new HashMap<String,Integer>();
 		
 		Connection connection = Conexao.criarConexao();
-		Statement st = connection.createStatement();
-		String query = "select from_user from twittes where keyword_id="+keywordId+addIntervaloData();
-		ResultSet rs = st.executeQuery(query);
+		
+		Statement st;
+		String query;
+		ResultSet rs;
 		String user;
-		while(rs.next()) {
-			user = rs.getString("from_user");
-			if(frequenciaUsuarios.containsKey(user))
-				frequenciaUsuarios.put(user, frequenciaUsuarios.get(user) + 1);
-			else
-				frequenciaUsuarios.put(user, 1);
+		for(Integer keywordId : keywordIds) {
+			st = connection.createStatement();
+			query = "select from_user from twittes where keyword_id="+keywordId+addIntervaloData();
+			rs = st.executeQuery(query);
+			
+			while(rs.next()) {
+				user = rs.getString("from_user");
+				if(frequenciaUsuarios.containsKey(user))
+					frequenciaUsuarios.put(user, frequenciaUsuarios.get(user) + 1);
+				else
+					frequenciaUsuarios.put(user, 1);
+			}
+			
+			rs.close();
+			st.close();
 		}
 		
 		Conexao.fecharConexao();
@@ -100,17 +125,40 @@ public class AnaliseTwittes {
 	public int getNrTwittes() throws SQLException {
 		Connection connection = Conexao.criarConexao();
 		
-		String queryCountTwittes = "select count(*) from twittes where keyword_id='"+keywordId+"'"+addIntervaloData();
-		Statement stCountTwittes = connection.createStatement();
-		ResultSet rsCountTwittes = stCountTwittes.executeQuery(queryCountTwittes);
-		rsCountTwittes.next();
-		int nrTwittes = Integer.parseInt(rsCountTwittes.getString("count"));
+		int nrTwittes=0;
+		
+		Statement stCountTwittes;
+		ResultSet rsCountTwittes;
+		String queryCountTwittes;
+		for(Integer keywordId : keywordIds) {
+			stCountTwittes = connection.createStatement();
+			queryCountTwittes = "select count(*) from twittes where keyword_id='"+keywordId+"'"+addIntervaloData();
+			rsCountTwittes = stCountTwittes.executeQuery(queryCountTwittes);
+			if(rsCountTwittes.next())
+				nrTwittes += Integer.parseInt(rsCountTwittes.getString("count"));
+			
+			rsCountTwittes.close();
+			stCountTwittes.close();
+		}
 		
 		
 		Conexao.fecharConexao();
 		return nrTwittes;
 	}
 	
+	
+	
+	/**
+	 * Metodo que faz uma busca de acordo com a lista de params
+	 * em todas as hashtags passadas por param
+	 */
+	public int getNrTwittesContaining(List<String> hashtags, List<String> words) {
+		
+		// Faz X selects com relacao ao numero de hashtags...
+		
+		
+		return 0;
+	}
 	
 	
 	

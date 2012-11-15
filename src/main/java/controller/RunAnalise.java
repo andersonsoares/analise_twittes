@@ -1,7 +1,9 @@
 package controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import utils.Auxiliar;
@@ -13,12 +15,16 @@ public class RunAnalise {
 //		new RemoverDuplicidade().execute();
 		try {
 			
-			String hashtag = "#DebateMn";
-			String dataInicio = "2012-09-28";
+			List<String> hashtags = new ArrayList<String>();
+			hashtags.add("#debatemn");
+			hashtags.add("#debatecidadeverde");
+			hashtags.add("#debateantena10");
+//			String hashtag = "#debatemn";
+			String dataInicio = "2012-09-25";
 			String dataFim = "2012-09-29";
 			
 			
-			AnaliseTwittes at = new AnaliseTwittes(hashtag, dataInicio, dataFim);
+			AnaliseTwittes at = new AnaliseTwittes(hashtags, dataInicio, dataFim);
 			HashMap<String, Integer> frequencia = at.getFrequenciaUsuarios();
 			Set<String> set = frequencia.keySet();
 			Iterator<String> it = set.iterator();
@@ -28,7 +34,7 @@ public class RunAnalise {
 //			}
 			int totalUsers = frequencia.size();
 			int totalTwittes = at.getNrTwittes();
-			System.out.println("Analise para: "+hashtag);
+//			System.out.println("Analise para: "+hashtag);
 			System.out.println("Periodo: "+dataInicio+" ate "+dataFim);
 			System.out.println("Total de usuarios que twittaram: "+totalUsers);
 			System.out.println("Total de twittes: "+totalTwittes);
@@ -45,6 +51,7 @@ public class RunAnalise {
 				
 				System.out.println(user+"\t\t\t"+frequenciaOrdenada.get(user)+"\t\t\t"+percentual+"%");
 			}
+			
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
